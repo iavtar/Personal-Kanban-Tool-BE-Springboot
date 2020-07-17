@@ -3,8 +3,10 @@ package com.iavtar.ppmtool.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.iavtar.ppmtool.domain.Backlog;
 import com.iavtar.ppmtool.domain.Project;
 import com.iavtar.ppmtool.exceptions.ProjectIdException;
+import com.iavtar.ppmtool.repositories.BacklogRepository;
 import com.iavtar.ppmtool.repositories.ProjectRepository;
 
 @Service
@@ -13,10 +15,24 @@ public class ProjectService {
 	@Autowired
 	private ProjectRepository projectRepository;
 
+	@Autowired
+	private BacklogRepository backlogRepositry;
+	
 	public Project saveOrUpdateProject(Project project) {
 
 		try {
 			project.setProjectIdentifier(project.getProjectIdentifier().toUpperCase());
+			
+			if(project.getId() == null) {
+				Backlog backlog = new Backlog();
+				project.setBacklog(backlog);
+				backlog.setProject(project);
+				backlog.setProjectIdentifier(project.getProjectIdentifier().toUpperCase());
+			}
+			
+			if(project.getId() != null) {
+				project.setBacklog(backlogRepositry.findByProjectIdentifier(project.getProjectIdentifier().toUpperCase()));
+			}
 			return projectRepository.save(project);
 		} catch (Exception e) {
 			throw new ProjectIdException(
