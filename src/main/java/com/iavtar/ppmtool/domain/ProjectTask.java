@@ -31,13 +31,13 @@ public class ProjectTask {
 	private String status;
 	private Integer priority;
 	private Date dueDate;
-	
+
 	// Many to one with Backlog
 	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REFRESH)
 	@JoinColumn(name = "backlog_id", updatable = false, nullable = false)
 	@JsonIgnore
 	private Backlog backlog;
-	
+
 	@Column(updatable = false)
 	private String projectIdentifier;
 
@@ -138,6 +138,14 @@ public class ProjectTask {
 		this.updated_At = updated_At;
 	}
 
+	public Backlog getBacklog() {
+		return backlog;
+	}
+
+	public void setBacklog(Backlog backlog) {
+		this.backlog = backlog;
+	}
+
 	@Override
 	public String toString() {
 		return "ProjectTask [id=" + id + ", projectSequence=" + projectSequence + ", summary=" + summary
@@ -145,7 +153,5 @@ public class ProjectTask {
 				+ ", dueDate=" + dueDate + ", projectIdentifier=" + projectIdentifier + ", created_At=" + created_At
 				+ ", updated_At=" + updated_At + "]";
 	}
-	
-	
 
 }
