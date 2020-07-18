@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,16 +45,32 @@ public class BacklogController {
 		return new ResponseEntity<ProjectTask>(projectTask1, HttpStatus.CREATED);
 
 	}
-	
+
 	@GetMapping("/{backlog_id}")
-	public Iterable<ProjectTask> getProjectBacklog(@PathVariable("backlog_id") String backlogId){
+	public Iterable<ProjectTask> getProjectBacklog(@PathVariable("backlog_id") String backlogId) {
 		return projectTaskService.findBacklogById(backlogId);
 	}
-	
+
 	@GetMapping("/{backlog_id}/{pt_id}")
-	public ResponseEntity<?> getProjectTask(@PathVariable("backlog_id") String backlogId, @PathVariable("pt_id") String ptId){
+	public ResponseEntity<?> getProjectTask(@PathVariable("backlog_id") String backlogId,
+			@PathVariable("pt_id") String ptId) {
 		ProjectTask projectTask = projectTaskService.findPTByProjectSequence(backlogId, ptId);
 		return new ResponseEntity<ProjectTask>(projectTask, HttpStatus.OK);
+	}
+
+	@PatchMapping("/{backlog_id}/{pt_id}")
+	public ResponseEntity<?> updateProjectTask(@Valid @RequestBody ProjectTask updatedProjectTask, BindingResult result,
+			@PathVariable("backlog_id") String backlogId, @PathVariable("pt_id") String ptId) {
+		ResponseEntity<?> errorMap = mapValidationErrorService.MapValidationService(result);
+
+		if (!(errorMap == null)) {
+			return errorMap;
+		}
+
+		ProjectTask updatedTask = projectTaskService.updateByProjectSequence(updatedProjectTask, backlogId, ptId);
+
+		return new ResponseEntity<ProjectTask>(updatedTask, HttpStatus.OK);
+
 	}
 
 }
