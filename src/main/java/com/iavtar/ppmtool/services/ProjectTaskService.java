@@ -1,7 +1,5 @@
 package com.iavtar.ppmtool.services;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +38,7 @@ public class ProjectTaskService {
 
 			projectTask.setProjectIdentifier(backlog.getProjectIdentifier());
 
-			if (projectTask.getPriority() == null) {
+			if (projectTask.getPriority() == 0 || projectTask.getPriority() == null) {
 				projectTask.setPriority(3);
 			}
 
