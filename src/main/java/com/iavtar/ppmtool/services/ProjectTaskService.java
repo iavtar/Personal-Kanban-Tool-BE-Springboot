@@ -4,12 +4,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.iavtar.ppmtool.domain.Backlog;
+import com.iavtar.ppmtool.domain.Project;
 import com.iavtar.ppmtool.domain.ProjectTask;
+import com.iavtar.ppmtool.exceptions.ProjectNotFoundException;
 import com.iavtar.ppmtool.repositories.BacklogRepository;
+import com.iavtar.ppmtool.repositories.ProjectRepository;
 import com.iavtar.ppmtool.repositories.ProjectTaskRepository;
 
 @Service
 public class ProjectTaskService {
+	
+	@Autowired
+	private ProjectRepository projectRepository;
 
 	@Autowired
 	private BacklogRepository backlogRepository;
@@ -19,31 +25,42 @@ public class ProjectTaskService {
 
 	public ProjectTask addProjectTask(String projectIdentifier, ProjectTask projectTask) {
 
-		Backlog backlog = backlogRepository.findByProjectIdentifier(projectIdentifier);
+		try {
+			Backlog backlog = backlogRepository.findByProjectIdentifier(projectIdentifier);
+			projectTask.setBacklog(backlog);
 
-		projectTask.setBacklog(backlog);
+			Integer backlogSequence = backlog.getPTSequence();
+			backlogSequence++;
 
-		Integer backlogSequence = backlog.getPTSequence();
-		backlogSequence++;
-		
-		backlog.setPTSequence(backlogSequence);
+			backlog.setPTSequence(backlogSequence);
 
-		projectTask.setProjectSequence(backlog.getProjectIdentifier() + "-" + backlogSequence);
+			projectTask.setProjectSequence(backlog.getProjectIdentifier() + "-" + backlogSequence);
 
-		projectTask.setProjectIdentifier(backlog.getProjectIdentifier());
+			projectTask.setProjectIdentifier(backlog.getProjectIdentifier());
 
-		if (projectTask.getPriority() == null) {
-			projectTask.setPriority(3);
+			if (projectTask.getPriority() == null) {
+				projectTask.setPriority(3);
+			}
+
+			if (projectTask.getStatus() == "" || projectTask.getStatus() == null) {
+				projectTask.setStatus("To-Do");
+			}
+
+			return projectTaskRepository.save(projectTask);
+
+		} catch (Exception e) {
+			throw new ProjectNotFoundException("Project with " + projectIdentifier + " not found");
 		}
 
-		if (projectTask.getStatus() == "" || projectTask.getStatus() == null) {
-			projectTask.setStatus("To-Do");
-		}
-
-		return projectTaskRepository.save(projectTask);
 	}
 
 	public Iterable<ProjectTask> findBacklogById(String backlogId) {
+
+		Project project = projectRepository.findByProjectIdentifier(backlogId);
+		
+		if(project == null) {
+			throw new ProjectNotFoundException("Project with ID: " + backlogId + " does not exist");
+		}
 		
 		return projectTaskRepository.findByProjectIdentifierOrderByPriority(backlogId);
 	}
